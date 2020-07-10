@@ -525,7 +525,7 @@ local classremap = {
 local importcache = {}
 local function ImportEntities(map)
    if not ents.TTT.CanImportEntities(map) then return end
-   print('importing entities functions')
+
    local importfile
    if importcache[map] then
       importfile = importcache[map]

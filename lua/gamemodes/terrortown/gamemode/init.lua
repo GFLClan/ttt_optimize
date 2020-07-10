@@ -2,6 +2,7 @@
 local AddCSLuaFile = AddCSLuaFile
 local include = include
 local CreateConVar = CreateConVar
+local GetConVar = GetConVar
 local SetGlobalBool = SetGlobalBool
 local SetGlobalInt = SetGlobalInt
 local SetGlobalFloat = SetGlobalFloat
