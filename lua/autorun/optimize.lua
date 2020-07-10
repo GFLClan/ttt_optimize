@@ -64,12 +64,10 @@ setmetatable(memoize, { __call = function(_, ...) return memoize.memoize(...) en
 
 string.Trim = memoize(string.Trim)
 string.find = memoize(string.find)
+string.match = memoize(string.match)
+string.gmatch = memoize(string.gmatch)
 string.gsub = memoize(string.gsub)
 string.byte = memoize(string.byte)
-file.Open = memoize(file.Open)
-file.Read = memoize(file.Read)
-file.Write = memoize(file.Write)
-file.Append = memoize(file.Append)
 
 Color = memoize(Color)
 Vector = memoize(Vector)
