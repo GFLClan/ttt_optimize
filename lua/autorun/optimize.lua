@@ -69,6 +69,10 @@ string.gmatch = memoize(string.gmatch)
 string.gsub = memoize(string.gsub)
 string.byte = memoize(string.byte)
 
+game.GetMap = memoize(game.GetMap)
+
+tonumber = memoize(tonumber)
+tostring = memoize(tostring)
 Color = memoize(Color)
 Vector = memoize(Vector)
 Angle = memoize(Angle)
