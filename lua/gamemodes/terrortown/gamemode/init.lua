@@ -402,16 +402,16 @@ local function CleanUp()
    -- a different kind of cleanup
    hook.Remove("PlayerSay", "ULXMeCheck")
 end
-local spawnimportcache = {}
+local spawnimportcache = nil
 local function SpawnEntities()
    local et = ents.TTT
    -- Spawn weapons from script if there is one
-   local import
-   if spawnimportcache[currentmap] then
-      import = spawnimportcache[currentmap]
+   local import = nil
+   if spawnimportcache then
+      import = spawnimportcache
    else
       import = et.CanImportEntities(currentmap)
-      spawnimportcache[currentmap] = import
+      spawnimportcache = import
    end
    if import then
       et.ProcessImportScript(currentmap)

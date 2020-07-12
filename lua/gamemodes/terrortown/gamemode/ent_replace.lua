@@ -490,31 +490,32 @@ function ents.TTT.CanImportEntities(map)
 
    return file.Exists(fname, "GAME")
 end
-local impsettingscache = {}
+
+local importsettings = nil
 local function ImportSettings(map)
    if not ents.TTT.CanImportEntities(map) then return end
-   if impsettingscache[map] then
-      return impsettingscache[map]
-   end
-   local fname = "maps/" .. map .. "_ttt.txt"
-   local buf = file.Read(fname, "GAME")
-
-   local settings = {}
-
-   local lines = string.Explode("\n", buf)
-   for k, line in pairs(lines) do
-      if string.match(line, "^setting") then
-         local key, val = string.match(line, "^setting:\t(%w*) ([0-9]*)")
-         val = tonumber(val)
-
-         if key and val then
-            settings[key] = val
-         else
-            ErrorNoHalt("Invalid setting line " .. k .. " in " .. fname .. "\n")
+   local settings
+   if not importsettings then
+      local fname = "maps/" .. map .. "_ttt.txt"
+      local buf = file.Read(fname, "GAME")
+         settings = {}
+         local lines = string.Explode("\n", buf)
+         for k, line in pairs(lines) do
+            if string.match(line, "^setting") then
+               local key, val = string.match(line, "^setting:\t(%w*) ([0-9]*)")
+               val = tonumber(val)
+   
+               if key and val then
+                  settings[key] = val
+               else
+                  ErrorNoHalt("Invalid setting line " .. k .. " in " .. fname .. "\n")
+               end
+            end
          end
-      end
+      importsettings = settings
+   else
+      settings = importsettings
    end
-   impsettingscache[map] = settings
    return settings
 end
 
@@ -522,53 +523,75 @@ local classremap = {
    ttt_playerspawn = "info_player_deathmatch"
 };
 
-local importcache = {}
+local importfile = nil
+local entities = nil
 local function ImportEntities(map)
    if not ents.TTT.CanImportEntities(map) then return end
+   local filetouse
 
-   local importfile
-   if importcache[map] then
-      importfile = importcache[map]
+   if importfile then
+      filetouse = importfile
    else
       local fname = "maps/" .. map .. "_ttt.txt"
-      importfile = string.Explode("\n", file.Read(fname, "GAME"))
-      importcache[map] = importfile
+      filetouse = string.Explode("\n", file.Read(fname, "GAME"))
+      importfile = filetouse
    end
+
    local num = 0
-   for k, line in ipairs(importfile) do
-      if (not string.match(line, "^#")) and (not string.match(line, "^setting")) and line != "" and string.byte(line) != 0 then
-         local data = string.Explode("\t", line)
 
-         local fail = true -- pessimism
+   if not istable(entities) then
+      entities = {}
+      for k, line in ipairs(filetouse) do
+         if (not string.match(line, "^#")) and (not string.match(line, "^setting")) and line ~= "" and string.byte(line) ~= 0 then
+            local data = string.Explode("\t", line)
+            local fail = true -- pessimism
 
-         if data[2] and data[3] then
-            local cls = data[1]
-            local ang = nil
-            local pos = nil
+            if data[2] and data[3] then
+               local cls = data[1]
+               local ang = nil
+               local pos = nil
+               local posraw = string.Explode(" ", data[2])
+               pos = Vector(tonumber(posraw[1]), tonumber(posraw[2]), tonumber(posraw[3]))
+               local angraw = string.Explode(" ", data[3])
+               ang = Angle(tonumber(angraw[1]), tonumber(angraw[2]), tonumber(angraw[3]))
+               -- Random weapons have a useful keyval
+               local kv = {}
 
-            local posraw = string.Explode(" ", data[2])
-            pos = Vector(tonumber(posraw[1]), tonumber(posraw[2]), tonumber(posraw[3]))
+               if data[4] then
+                  local kvraw = string.Explode(" ", data[4])
+                  local key = kvraw[1]
+                  local val = tonumber(kvraw[2])
 
-            local angraw = string.Explode(" ", data[3])
-            ang = Angle(tonumber(angraw[1]), tonumber(angraw[2]), tonumber(angraw[3]))
-
-            -- Random weapons have a useful keyval
-            local kv = {}
-            if data[4] then
-               local kvraw = string.Explode(" ", data[4])
-               local key = kvraw[1]
-               local val = tonumber(kvraw[2])
-
-               if key and val then
-                  kv[key] = val
+                  if key and val then
+                     kv[key] = val
+                  end
                end
+
+               -- Some dummy ents remap to different, real entity names
+               cls = classremap[cls] or cls
+
+               entities[#entities + 1] = {
+                  cls = cls,
+                  pos = pos,
+                  ang = ang,
+                  kv = kv
+               }
+
+               fail = not CreateImportedEnt(cls, pos, ang, kv)
             end
 
-            -- Some dummy ents remap to different, real entity names
-            cls = classremap[cls] or cls
-
-            fail = not CreateImportedEnt(cls, pos, ang, kv)
+            if fail then
+               ErrorNoHalt("Invalid line " .. k .. " in " .. fname .. "\n")
+            else
+               num = num + 1
+            end
          end
+      end
+   else
+      for k, v in ipairs(entities) do
+         local fail = true -- pessimism
+
+         fail = not CreateImportedEnt(v["cls"], v["pos"], v["ang"], v["kv"])
 
          if fail then
             ErrorNoHalt("Invalid line " .. k .. " in " .. fname .. "\n")
