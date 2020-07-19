@@ -73,11 +73,9 @@ game.GetMap = memoize(game.GetMap)
 
 tonumber = memoize(tonumber)
 tostring = memoize(tostring)
-Color = memoize(Color)
-Vector = memoize(Vector)
-Angle = memoize(Angle)
+tobool = memoize(tobool)
+
 if CLIENT then
 	Material = memoize(Material)
-	surface.CreateFont = memoize(surface.CreateFont)
-	surface.GetTextureID = memoize(surface.GetTextureID)
+	ScreenScale = memoize(ScreenScale)
 end
