@@ -1,8 +1,24 @@
+local _setmetatable = setmetatable
+local _unpack = unpack
+local _getmetatable = getmetatable
+local _type = type
+local _string_find = string.find
+local _string_byte = string.byte
+local _string_Trim = string.Trim
+local _error = error
+local _string_gmatch = string.gmatch
+local _tostring = tostring
+local _string_gsub = string.gsub
+local _string_match = string.match
+local _tobool = tobool
+local _tonumber = tonumber
+local _string_format = string.format
+local _ScreenScale = (CLIENT and ScreenScale or nil)
 local string = string
-local type = type
-local getmetatable = getmetatable
+local type = _type
+local getmetatable = _getmetatable
 
-local unpack = unpack or table.unpack
+local unpack = _unpack or table.unpack
 
 local function is_callable(f)
 	local tf = type(f)
@@ -42,9 +58,9 @@ function memoize.memoize(f, cache)
 	cache = cache or {}
 
 	if not is_callable(f) then
-		error(string.format(
+		_error(_string_format(
 						"Only functions and callable tables are memoizable. Received %s (a %s)",
-						 tostring(f), type(f)))
+						 _tostring(f), type(f)))
 	end
 
 	return function (...)
@@ -60,22 +76,21 @@ function memoize.memoize(f, cache)
 	end
 end
 
-setmetatable(memoize, { __call = function(_, ...) return memoize.memoize(...) end })
+_setmetatable(memoize, { __call = function(_, ...) return memoize.memoize(...) end })
 
-string.Trim = memoize(string.Trim)
-string.find = memoize(string.find)
-string.match = memoize(string.match)
-string.gmatch = memoize(string.gmatch)
-string.gsub = memoize(string.gsub)
-string.byte = memoize(string.byte)
+_string_Trim = memoize(_string_Trim)
+_string_find = memoize(_string_find)
+_string_match = memoize(_string_match)
+_string_gmatch = memoize(_string_gmatch)
+_string_gsub = memoize(_string_gsub)
+_string_byte = memoize(_string_byte)
 
 game.GetMap = memoize(game.GetMap)
 
-tonumber = memoize(tonumber)
-tostring = memoize(tostring)
-tobool = memoize(tobool)
+_tonumber = memoize(_tonumber)
+_tostring = memoize(_tostring)
+_tobool = memoize(_tobool)
 
 if CLIENT then
-	Material = memoize(Material)
-	ScreenScale = memoize(ScreenScale)
+	_ScreenScale = memoize(_ScreenScale)
 end
