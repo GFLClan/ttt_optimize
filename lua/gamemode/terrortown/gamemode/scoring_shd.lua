@@ -7,7 +7,12 @@ local _IsValid = IsValid
 -- Server and client both need this for scoring event logs
 
 -- 2^16 bytes - 4 (header) - 2 (UInt length in TTT_ReportStream) - 1 (terminanting byte)
-(SERVER and SCORE or CLSCORE).MaxStreamLength = 65529
+if SERVER then
+   SCORE.MaxStreamLength = 65529
+else
+   CLSCORE.MaxStreamLength = 65529
+end
+
 
 function ScoreInit()
    return {

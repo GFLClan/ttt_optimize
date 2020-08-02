@@ -187,7 +187,7 @@ end
 
 -- Note that this is called both when a player spawns and when a round starts
 function GM:PlayerLoadout( ply )
-   if _IsValid(ply) and (not ply:IsSpec()) then
+   if _IsValid(ply) and (not ply:IsSpec()) and ply:Alive() then
       -- clear out equipment flags
       ply:ResetEquipment()
 

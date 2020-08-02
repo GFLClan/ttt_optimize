@@ -184,6 +184,16 @@ if CLIENT then
    _G.ScreenScale = memoize(_ScreenScale)
 end
 
+local _hook_Add = hook.Add
+local _MsgN = MsgN
+local _hook_Remove = hook.Remove
+_hook_Add( "PreGamemodeLoaded", "DeleteWidgets", function()
+   function widgets.PlayerTick()
+   end
+   _hook_Remove( "PlayerTick", "TickWidgets" )
+end )
+
+
 _include("util.lua")
 _include("lang_shd.lua") -- uses some of util
 _include("equip_items_shd.lua")
