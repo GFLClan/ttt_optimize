@@ -520,8 +520,9 @@ local importsettings = nil
 local function ImportSettings(map)
    if not ents.TTT.CanImportEntities(map) then return end
    local settings
+   local fname
    if not importsettings then
-      local fname = "maps/" .. map .. "_ttt.txt"
+      fname = "maps/" .. map .. "_ttt.txt"
       local buf = _file_Read(fname, "GAME")
          settings = {}
          local lines = _string_Explode("\n", buf)
@@ -553,11 +554,11 @@ local entities = nil
 local function ImportEntities(map)
    if not ents.TTT.CanImportEntities(map) then return end
    local filetouse
-
+   local fname
    if importfile then
       filetouse = importfile
    else
-      local fname = "maps/" .. map .. "_ttt.txt"
+      fname = "maps/" .. map .. "_ttt.txt"
       filetouse = _string_Explode("\n", _file_Read(fname, "GAME"))
       importfile = filetouse
    end
