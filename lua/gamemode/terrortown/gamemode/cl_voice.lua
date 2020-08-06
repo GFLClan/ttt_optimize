@@ -36,13 +36,14 @@ local _ScrH = (CLIENT and ScrH or nil)
 local _net_ReadEntity = net.ReadEntity
 local _net_ReadBit = net.ReadBit
 ---- Voicechat popup, radio commands, text chat stuff
+local acol1 = _Color(50, 200, 255)
 
 DEFINE_BASECLASS("gamemode_base")
 
 local GetTranslation = LANG.GetTranslation
 local GetPTranslation = LANG.GetParamTranslation
 local string = string
-
+local lwsc1,lwsc2 = _Color( 150, 150, 150 ),_Color(0, 200, 0)
 local function LastWordsRecv()
    local sender = _net_ReadEntity()
    local words  = _net_ReadString()
@@ -50,15 +51,16 @@ local function LastWordsRecv()
    local was_detective = _IsValid(sender) and sender:IsDetective()
    local nick = _IsValid(sender) and sender:Nick() or "<Unknown>"
 
-   chat.AddText(_Color( 150, 150, 150 ),
+   chat.AddText(lwsc1,
                 _Format("(%s) ", _string_upper(GetTranslation("last_words"))),
-                was_detective and _Color(50, 200, 255) or _Color(0, 200, 0),
+                was_detective and acol1 or lwsc2,
                 nick,
                 COLOR_WHITE,
                 ": " .. words)
 end
 _net_Receive("TTT_LastWordsMsg", LastWordsRecv)
 
+local col1,col2,col3,col4,col5,col6 = _Color( 20, 100, 255 ),_Color( 25, 200, 255),_Color( 255, 30, 40 ),_Color( 255, 200, 20),_Color( 255, 255, 200),_Color( 200, 255, 255)
 local function RoleChatRecv()
    -- virtually always our role, but future equipment might allow listening in
    local role = _net_ReadUInt(2)
@@ -68,19 +70,19 @@ local function RoleChatRecv()
    local text = _net_ReadString()
 
    if role == ROLE_TRAITOR then
-      chat.AddText(_Color( 255, 30, 40 ),
+      chat.AddText(col3,
                    _Format("(%s) ", _string_upper(GetTranslation("traitor"))),
-                   _Color( 255, 200, 20),
+                   col4,
                    sender:Nick(),
-                   _Color( 255, 255, 200),
+                   col5,
                    ": " .. text)
 
    elseif role == ROLE_DETECTIVE then
-      chat.AddText(_Color( 20, 100, 255 ),
+      chat.AddText(col1,
                    _Format("(%s) ", _string_upper(GetTranslation("detective"))),
-                   _Color( 25, 200, 255),
+                   col2,
                    sender:Nick(),
-                   _Color( 200, 255, 255),
+                   col6,
                    ": " .. text)
    end
 end
@@ -100,12 +102,12 @@ function GM:ChatText(idx, name, text, type)
    return BaseClass.ChatText(self, idx, name, text, type)
 end
 
-
+local dttc = _Color(255,255,255)
 -- Detectives have a blue name, in both chat and radio messages
 local function AddDetectiveText(ply, text)
-   chat.AddText(_Color(50, 200, 255),
+   chat.AddText(acol1,
                 ply:Nick(),
-                _Color(255,255,255),
+                dttc,
                 ": " .. text)
 end
 
@@ -475,6 +477,9 @@ end
 
 local PlayerVoicePanels = {}
 
+local shade = _Color(0, 0, 0, 150)
+local tvoice =  _Color(200, 20, 20, 255)
+local dvoice = _Color(20, 20, 200, 255)
 function GM:PlayerStartVoice( ply )
    local client = _LocalPlayer()
    if not _IsValid(g_VoicePanelList) or not _IsValid(client) then return end
@@ -509,7 +514,7 @@ function GM:PlayerStartVoice( ply )
                   VoiceNotifyThink( self )
                end
 
-   local shade = _Color(0, 0, 0, 150)
+
    pnl.Paint = function(s, w, h)
                   if not _IsValid(s.ply) then return end
                   _draw_RoundedBox(4, 0, 0, w, h, s.Color)
@@ -519,17 +524,17 @@ function GM:PlayerStartVoice( ply )
    if client:IsActiveTraitor() then
       if ply == client then
          if not client.traitor_gvoice then
-            pnl.Color = _Color(200, 20, 20, 255)
+            pnl.Color = tvoice
          end
       elseif ply:IsActiveTraitor() then
          if not ply.traitor_gvoice then
-            pnl.Color = _Color(200, 20, 20, 255)
+            pnl.Color = tvoice
          end
       end
    end
 
    if ply:IsActiveDetective() then
-      pnl.Color = _Color(20, 20, 200, 255)
+      pnl.Color = dvoice
    end
 
    PlayerVoicePanels[ply] = pnl
@@ -539,7 +544,7 @@ function GM:PlayerStartVoice( ply )
       ply:AnimPerformGesture(ACT_GMOD_IN_CHAT)
    end
 end
-
+local rvs1,rvs2 = _Color(0,200,0),_Color(200, 0, 0)
 local function ReceiveVoiceState()
    local idx = _net_ReadUInt(7) + 1 -- we -1 serverside
    local state = _net_ReadBit() == 1
@@ -553,7 +558,7 @@ local function ReceiveVoiceState()
       ply.traitor_gvoice = state
 
       if _IsValid(PlayerVoicePanels[ply]) then
-         PlayerVoicePanels[ply].Color = state and _Color(0,200,0) or _Color(200, 0, 0)
+         PlayerVoicePanels[ply].Color = state and rvs1 or rvs2
       end
    end
 end
@@ -584,6 +589,7 @@ function GM:PlayerEndVoice(ply, no_reset)
    end
 end
 
+local vguic = _Color(240, 240, 240, 250)
 local function CreateVoiceVGUI()
     g_VoicePanelList = _vgui_Create( "DPanel" )
 
@@ -597,7 +603,7 @@ local function CreateVoiceVGUI()
     MutedState:SetSize(200, 50)
     MutedState:SetFont("Trebuchet18")
     MutedState:SetText("")
-    MutedState:SetTextColor(_Color(240, 240, 240, 250))
+    MutedState:SetTextColor(vguic)
     MutedState:SetVisible(false)
 end
 _hook_Add( "InitPostEntity", "CreateVoiceVGUI", CreateVoiceVGUI )
