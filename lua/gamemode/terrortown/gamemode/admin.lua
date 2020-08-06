@@ -18,26 +18,6 @@ local _math_max = math.max
 local _pairs = pairs
 local _tobool = tobool
 local _CreateConVar = CreateConVar
-local _IsValid = _IsValid
-local _CreateConVar = _CreateConVar
-local _RunConsoleCommand = _RunConsoleCommand
-local _tobool = _tobool
-local _hook_Add = _hook_Add
-local _concommand_Add = _concommand_Add
-local _pairs = _pairs
-local _print = _print
-local _table_insert = _table_insert
-local _ipairs = _ipairs
-local _string_lower = _string_lower
-local _SetGlobalBool = _SetGlobalBool
-local _player_GetAll = _player_GetAll
-local _table_sort = _table_sort
-local _CurTime = _CurTime
-local _tonumber = _tonumber
-local _math_max = _math_max
-local _ServerLog = (SERVER and _ServerLog or nil)
-local _file_Write = _file_Write
-local _Format = _Format
 
 --- Admin commands
 local function GetPrintFn(ply)
@@ -203,6 +183,8 @@ local function DetectServerPlugin()
       return "evolve"
    elseif exsto and exsto.GetPlugin('administration') then
       return "exsto"
+   elseif sam and sam.player.ban_id then
+      return "sam"
    else
       return "gmod"
    end
@@ -215,6 +197,7 @@ end
 
 local ban_functions = {
    ulx = ULib and ULib.kickban, -- has (ply, length, reason) signature
+   sam = sam and sam.player.ban_id,
    evolve = function(p, l, r)
       evolve:Ban(p:UniqueID(), l * 60, r) -- time in seconds
    end,
@@ -228,6 +211,7 @@ local ban_functions = {
          adm:Ban(nil, p, l, r)
       end
    end,
+
    gmod = StandardBan
 }
 
@@ -243,7 +227,8 @@ local function BanningFunction()
    return ban_functions[bantype] or ban_functions["gmod"]
 end
 
+local banfn = BanningFunction()
+
 function PerformKickBan(ply, length, reason)
-   local banfn = BanningFunction()
    banfn(ply, length, reason)
 end
